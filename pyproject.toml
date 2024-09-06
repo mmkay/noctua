@@ -1,0 +1,40 @@
+[project]
+name = "noctua"
+version = "0.1"
+description = "Helper tool for Canonical's Observability CI"
+authors = [
+  { name = "Luca Bello", email = "lusgabello@gmail.com"}
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "packaging(==24.1)",
+  "pyyaml(==6.0.2)",
+  "requests(==2.32.3)",
+  "rich(==13.8.0)",
+  "sh(==2.0.7)",
+  "typer(==0.12.5)",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/lucabello/noctua"
+"Bug Tracker" = "https://github.com/lucabello/noctua/issues"
+
+[project.scripts]
+noctua = "main:app"
+
+[tool.ruff]
+line-length = 99
+extend-exclude = ["__pycache__", "*.egg_info"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "C", "N", "R", "D", "I001"]
+# ignore = ["E501", "D107", "RET504", "C901"]
+# D100, D101, D102, D103: Ignore missing docstrings in tests
+per-file-ignores = {"tests/*" = ["D100","D101","D102","D103"], "tests/constants.py" = ["E501"]}
+extend-select = ["I"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+

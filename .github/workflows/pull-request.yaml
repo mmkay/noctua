@@ -1,0 +1,26 @@
+name: Unit Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Set up python
+        uses: actions/setup-python@v4
+      - name: Install dependencies
+        run: python -m pip install tox
+      - name: Run Linter
+        run: tox -e lint
+      - name: Run Static checks
+        run: tox -e static
+      - name: Run Unit tets
+        run: tox -e unit
