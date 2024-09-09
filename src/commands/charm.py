@@ -1,7 +1,7 @@
 """Typer application to run charm-related commands."""
 
 import logging
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
 from rich.console import Console
@@ -85,10 +85,6 @@ def promote_train(
 
 @app.command()
 def release(
-    charm_name: Annotated[
-        str,
-        typer.Argument(help="Charm name as registered in Charmhub.", show_default=False),
-    ],
     charm_path: Annotated[
         str,
         typer.Option(
@@ -104,12 +100,23 @@ def release(
             show_default=False,
         ),
     ],
+    charm_name: Annotated[
+        Optional[str],
+        typer.Argument(
+            help="Charm name as registered in Charmhub. Parsed from metadata if not specified.",
+            show_default=False,
+            ),
+        ] = None,
     dry_run: Annotated[
         bool,
         typer.Option(help="Only print the releases instead of promoting the charm."),
     ] = True,
+    format_json: Annotated[
+        bool, typer.Option("--json", help="If True print the CI status as a json.")
+    ] = False,
 ):
     """Upload and release a local '.charm' file to Charmhub."""
+    charm_name = charm_name or charmcraft.metadata()["name"]
     uploaded_charm = charmcraft.upload(charm_name=charm_name, path=charm_path, dry_run=dry_run)
     charmcraft.release(
         charm=charm_name,
@@ -118,6 +125,8 @@ def release(
         resources=[f"{r.name}:{r.revision}" for r in uploaded_charm.resources],
         dry_run=dry_run,
     )
+    if format_json:
+        console.print({"revision": uploaded_charm.revision})
 
 
 @app.command()
