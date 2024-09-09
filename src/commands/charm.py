@@ -37,7 +37,7 @@ def promote(
     dry_run: Annotated[
         bool,
         typer.Option(help="Only print releases instead of promoting the charm."),
-    ] = True,
+    ] = False,
 ):
     """Promote a charm revision from a channel to the next risk channel.
 
@@ -66,7 +66,7 @@ def promote_train(
     dry_run: Annotated[
         bool,
         typer.Option(help="Only print the releases instead of promoting the charm"),
-    ] = True,
+    ] = False,
 ):
     """Promote all the revisions in a track to their next risk channel.
 

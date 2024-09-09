@@ -62,7 +62,7 @@ def publish(
     dry_run: Annotated[
         bool,
         typer.Option(help="Only print the library that would be released"),
-    ] = True,
+    ] = False,
 ):
     """Publish all the charm libraries that belong to the charm."""
     charmcraft.publish_charm_libraries(dry_run)
