@@ -105,8 +105,8 @@ def release(
         typer.Argument(
             help="Charm name as registered in Charmhub. Parsed from metadata if not specified.",
             show_default=False,
-            ),
-        ] = None,
+        ),
+    ] = None,
     dry_run: Annotated[
         bool,
         typer.Option(help="Only print the releases instead of promoting the charm."),

@@ -3,9 +3,11 @@
 import json
 import re
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Dict, List
 
 import requests
+import sh
 from packaging.version import Version
 
 # pyright: reportAttributeAccessIssue=false
@@ -145,3 +147,25 @@ def oci_factory_manifest(
         manifest["upload"].append(upload_item)
 
     return manifest
+
+
+def push_to_registry(
+    path: str | Path, image_name: str, image_tag: str, registry: str = "localhost:32000"
+) -> str:
+    """Push a .rock file to a docker registry.
+
+    The rock is pushed by default to the local registry, with an image
+
+    Args:
+        path: Path to the .rock file.
+        image_name: Name of the pushed image.
+        image_tag: Tag to apply to the pushed image.
+        registry: URL of the registry to push the image to (defaults to local registry).
+
+    Returns:
+        A URI of the rock in the registry (e.g., `docker://localhost:32000/image:tag`).
+    """
+    skopeo: sh.Command = sh.Command("rockcraft.skopeo").bake(insecure_policy=True)
+    image_uri = f"{registry}/{image_name}:{image_tag}"
+    skopeo.copy(f"oci-archive:{path}", f"docker://{image_uri}", dest_tls_verify="false")
+    return image_uri
