@@ -61,7 +61,7 @@ def run(
     """Run a *.rock file in a pod on the local Kubernetes cluster."""
     if not os.path.exists(rock_path):
         raise InputError("The provided rock doesn't exist.")
-    rock_matches = re.compile(r"(.*/)*(?P<app>.+)_(?P<version>.+)_.+\.rock").match(rock_path)
+    rock_matches = re.compile(r"(.*/)*(?P<app>.+)_(?P<version>.+)_(?P<arch>.+\.rock").match(rock_path)
     rock_name = rock_matches.group("app") if rock_matches else "test-rock"
     rock_tag = rock_matches.group("version") if rock_matches else "dev"
 
@@ -88,13 +88,6 @@ def test(
             help="Kubernetes namespace to run the pod in",
         ),
     ] = "default",
-    arch: Annotated[
-        str,
-        typer.Option(
-            "--arch",
-            help="The rock architecture, for the Goss binary",
-        ),
-    ] = "amd64",
     goss_path: Annotated[
         Optional[str],
         typer.Option("--goss-file", help="Path to a 'goss.yaml' file", show_default=False),
@@ -109,17 +102,12 @@ def test(
     This command expects a 'goss.yaml' in the same folder as the *.rock file,
     to be run from inside the pod. The rock doesn't need to have 'goss' installed.
     """
-    rock_matches = re.compile(r"(.*/)*(?P<app>.+)_(?P<version>.+)_.+\.rock").match(rock_path)
-    if not rock_matches:
-        raise InputError(
-            "The rock file name should have the following format: "
-            "(rock_name)_(version)_(arch).rock"
-        )
     if not os.path.exists(rock_path):
         raise InputError("The provided rock doesn't exist.")
-
-    rock_name = rock_matches.group("app")
-    rock_tag = rock_matches.group("version")
+    rock_matches = re.compile(r"(.*/)*(?P<app>.+)_(?P<version>.+)_(?P<arch>.+\.rock").match(rock_path)
+    rock_name = rock_matches.group("app") if rock_matches else "test-rock"
+    rock_tag = rock_matches.group("version") if rock_matches else "dev"
+    rock_arch = rock_matches.group("arch") if rock_matches else "amd64"
 
     if not goss_path:
         goss_path = os.path.join(os.path.dirname(os.path.realpath(rock_path)), "goss.yaml")
@@ -130,7 +118,7 @@ def test(
     pod_name = f"{rock_name}-{rock_tag.replace('.', '-')}"
 
     kubernetes.run(pod=pod_name, namespace=namespace, image_uri=image_uri)
-    kubernetes.install_goss(pod=pod_name, namespace=namespace, arch=arch)
+    kubernetes.install_goss(pod=pod_name, namespace=namespace, arch=rock_arch)
     kubernetes.install_goss_checks(pod=pod_name, namespace=namespace, path=goss_path)
     kubernetes.run_goss(pod=pod_name, namespace=namespace)
 
