@@ -49,7 +49,8 @@ def run(
     namespace: Annotated[
         str,
         typer.Option(
-            "--namespace", help="Kubernetes namespace to run the pod in", show_default=False
+            "--namespace",
+            help="Kubernetes namespace to run the pod in",
         ),
     ] = "default",
     one_shot: Annotated[
@@ -89,7 +90,8 @@ def test(
     namespace: Annotated[
         str,
         typer.Option(
-            "--namespace", help="Kubernetes namespace to run the pod in", show_default=False
+            "--namespace",
+            help="Kubernetes namespace to run the pod in",
         ),
     ] = "default",
     arch: Annotated[
