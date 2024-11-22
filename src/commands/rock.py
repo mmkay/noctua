@@ -61,7 +61,8 @@ def run(
     """Run a *.rock file in a pod on the local Kubernetes cluster."""
     if not os.path.exists(rock_path):
         raise InputError("The provided rock doesn't exist.")
-    rock_matches = re.compile(r"(.*/)*(?P<app>.+)_(?P<version>.+)_(?P<arch>.+\.rock").match(rock_path)
+    regex = re.compile(r'(.*/)*(?P<app>.+)_(?P<version>.+)_(?P<arch>.+\.rock)')
+    rock_matches = regex.match(rock_path)
     rock_name = rock_matches.group("app") if rock_matches else "test-rock"
     rock_tag = rock_matches.group("version") if rock_matches else "dev"
 
@@ -104,7 +105,8 @@ def test(
     """
     if not os.path.exists(rock_path):
         raise InputError("The provided rock doesn't exist.")
-    rock_matches = re.compile(r"(.*/)*(?P<app>.+)_(?P<version>.+)_(?P<arch>.+\.rock").match(rock_path)
+    regex = re.compile(r'(.*/)*(?P<app>.+)_(?P<version>.+)_(?P<arch>.+\.rock)')
+    rock_matches = regex.match(rock_path)
     rock_name = rock_matches.group("app") if rock_matches else "test-rock"
     rock_tag = rock_matches.group("version") if rock_matches else "dev"
     rock_arch = rock_matches.group("arch") if rock_matches else "amd64"
