@@ -128,7 +128,7 @@ def oci_factory_manifest(
         A dictionary of the generated 'image.yaml' file
     """
     end_of_life_date = datetime.now() + timedelta(days=365 / 4)  # EOL is 3 months by default
-    end_of_life = f"{end_of_life_date.strftime("%Y-%m-%d")}T00:00:00Z"
+    end_of_life = f"{end_of_life_date.strftime('%Y-%m-%d')}T00:00:00Z"
 
     manifest = {}
     manifest["version"] = 1
