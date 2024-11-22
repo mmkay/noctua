@@ -3,7 +3,7 @@
 import logging
 import os
 import re
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 
 import typer
 import yaml
@@ -59,17 +59,11 @@ def run(
     ] = False,
 ):
     """Run a *.rock file in a pod on the local Kubernetes cluster."""
-    rock_matches = re.compile(r"(.*/)*(?P<app>.+)_(?P<version>.+)_.+\.rock").match(rock_path)
-    if not rock_matches:
-        raise InputError(
-            "The rock file name should have the following format: "
-            "(rock_name)_(version)_(arch).rock"
-        )
     if not os.path.exists(rock_path):
         raise InputError("The provided rock doesn't exist.")
-
-    rock_name = rock_matches.group("app")
-    rock_tag = rock_matches.group("version")
+    rock_matches = re.compile(r"(.*/)*(?P<app>.+)_(?P<version>.+)_.+\.rock").match(rock_path)
+    rock_name = rock_matches.group("app") if rock_matches else "test-rock"
+    rock_tag = rock_matches.group("version") if rock_matches else "dev"
 
     image_uri = rockcraft.push_to_registry(
         path=rock_path, image_name=rock_name, image_tag=rock_tag
@@ -101,6 +95,10 @@ def test(
             help="The rock architecture, for the Goss binary",
         ),
     ] = "amd64",
+    goss_path: Annotated[
+        Optional[str],
+        typer.Option("--goss-file", help="Path to a 'goss.yaml' file", show_default=False),
+    ] = None,
     one_shot: Annotated[
         bool,
         typer.Option("--one-shot", help="Delete the pod after running the tests"),
@@ -122,7 +120,9 @@ def test(
 
     rock_name = rock_matches.group("app")
     rock_tag = rock_matches.group("version")
-    goss_checks_path = os.path.join(os.path.dirname(os.path.realpath(rock_path)), "goss.yaml")
+
+    if not goss_path:
+        goss_path = os.path.join(os.path.dirname(os.path.realpath(rock_path)), "goss.yaml")
 
     image_uri = rockcraft.push_to_registry(
         path=rock_path, image_name=rock_name, image_tag=rock_tag
@@ -131,7 +131,7 @@ def test(
 
     kubernetes.run(pod=pod_name, namespace=namespace, image_uri=image_uri)
     kubernetes.install_goss(pod=pod_name, namespace=namespace, arch=arch)
-    kubernetes.install_goss_checks(pod=pod_name, namespace=namespace, path=goss_checks_path)
+    kubernetes.install_goss_checks(pod=pod_name, namespace=namespace, path=goss_path)
     kubernetes.run_goss(pod=pod_name, namespace=namespace)
 
     if one_shot:
