@@ -61,7 +61,7 @@ def run(
     """Run a *.rock file in a pod on the local Kubernetes cluster."""
     if not os.path.exists(rock_path):
         raise InputError("The provided rock doesn't exist.")
-    regex = re.compile(r'(.*/)*(?P<app>.+)_(?P<version>.+)_(?P<arch>.+)\.rock')
+    regex = re.compile(r"(.*/)*(?P<app>.+)_(?P<version>.+)_(?P<arch>.+)\.rock")
     rock_matches = regex.match(rock_path)
     rock_name = rock_matches.group("app") if rock_matches else "test-rock"
     rock_tag = rock_matches.group("version") if rock_matches else "dev"
@@ -97,6 +97,10 @@ def test(
         bool,
         typer.Option("--one-shot", help="Delete the pod after running the tests"),
     ] = False,
+    is_ci: Annotated[
+        bool,
+        typer.Option("--ci", help="Run commands without a TTY"),
+    ] = False,
 ):
     """Run a rock and its Goss checks for a specific *.rock file.
 
@@ -105,7 +109,7 @@ def test(
     """
     if not os.path.exists(rock_path):
         raise InputError("The provided rock doesn't exist.")
-    regex = re.compile(r'(.*/)*(?P<app>.+)_(?P<version>.+)_(?P<arch>.+)\.rock')
+    regex = re.compile(r"(.*/)*(?P<app>.+)_(?P<version>.+)_(?P<arch>.+)\.rock")
     rock_matches = regex.match(rock_path)
     rock_name = rock_matches.group("app") if rock_matches else "test-rock"
     rock_tag = rock_matches.group("version") if rock_matches else "dev"
@@ -122,7 +126,7 @@ def test(
     kubernetes.run(pod=pod_name, namespace=namespace, image_uri=image_uri)
     kubernetes.install_goss(pod=pod_name, namespace=namespace, arch=rock_arch)
     kubernetes.install_goss_checks(pod=pod_name, namespace=namespace, path=goss_path)
-    kubernetes.run_goss(pod=pod_name, namespace=namespace)
+    kubernetes.run_goss(pod=pod_name, namespace=namespace, is_ci=is_ci)
 
     if one_shot:
         kubernetes.stop(pod=pod_name, namespace=namespace)

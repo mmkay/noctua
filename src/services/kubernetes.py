@@ -94,13 +94,14 @@ def install_goss_checks(pod: str, namespace: str, path: str):
     console.print("done.")
 
 
-def run_goss(pod: str, namespace: str):
+def run_goss(pod: str, namespace: str, is_ci: bool):
     """Run `goss validate` in a pod.
 
     It assumes Goss is already installed and that goss checks are available at
     the '/goss.yaml' path.
     """
-    kubectl_exec = sh.kubectl.exec.bake(pod, namespace=namespace).bake("-it", "--")
+    kubectl_flags = "-i" if is_ci else "-it"
+    kubectl_exec = sh.kubectl.exec.bake(pod, namespace=namespace).bake(kubectl_flags, "--")
     try:
         kubectl_exec.goss.validate(_fg=True)
     except sh.ErrorReturnCode_1:
