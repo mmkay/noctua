@@ -84,6 +84,21 @@ def install_goss(pod: str, namespace: str, arch: str = "amd64"):
         kubectl_exec.chmod("+rx", "/usr/bin/goss")
         console.print("done.")
 
+def install_trivy(pod: str, namespace:str):
+    """Install the latest Trivy in a pod."""
+    _wait_for_pod(pod=pod, namespace=namespace)
+    console.print(f"Installing Trivy in {pod}... ", end="")
+    kubectl_exec = sh.kubectl.exec.bake(pod, namespace=namespace).bake("-it", "--", _tty_in=True)
+    try:
+        kubectl_exec.which("trivy")
+        console.print("already installed.")
+    except sh.ErrorReturnCode_1:
+        kubectl_exec.apt.update()
+        kubectl_exec.apt.install("wget", y=True)
+        kubectl_exec.wget("https://github.com/aquasecurity/trivy/releases/download/v0.18.3/trivy_0.18.3_Linux-64bit.deb")
+        kubectl_exec.dpkg("-i", "trivy_0.18.3_Linux-64bit.deb")
+        console.print("done.")
+
 
 def install_goss_checks(pod: str, namespace: str, path: str):
     """Copy the 'goss.yaml' file in the pod."""

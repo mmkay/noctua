@@ -125,6 +125,7 @@ def test(
 
     kubernetes.run(pod=pod_name, namespace=namespace, image_uri=image_uri)
     kubernetes.install_goss(pod=pod_name, namespace=namespace, arch=rock_arch)
+    kubernetes.install_trivy(pod=pod_name, namespace=namespace)
     kubernetes.install_goss_checks(pod=pod_name, namespace=namespace, path=goss_path)
     kubernetes.run_goss(pod=pod_name, namespace=namespace, is_ci=is_ci)
 
