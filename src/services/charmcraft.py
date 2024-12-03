@@ -433,7 +433,7 @@ def promote(charm: str, source: str, target: str, dry_run: bool = False):
     for base, base_status in track_status.bases.items():
         source_status = base_status.channels[source]
         target_status = base_status.channels[target]
-        if target_status.status == "open":
+        if source_status.status == "open" and target_status.status == "open":
             resources_args = [f"--resource={r.name}:{r.revision}" for r in source_status.resources]
             if dry_run:
                 console.print(
