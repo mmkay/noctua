@@ -8,6 +8,7 @@ from typing import Dict, List
 
 import requests
 import sh
+import yaml
 from packaging.version import Version
 
 # pyright: reportAttributeAccessIssue=false
@@ -112,7 +113,7 @@ def oci_factory_tags(rock_name: str) -> List[str]:
 
 def oci_factory_manifest(
     repository: str, commit: str, versions_with_tags: Dict[str, List[str]]
-) -> Dict[str, str]:
+) -> str:
     """Generate an OCI Factory manifest (i.e., the 'image.yaml' file).
 
     This assumes that the rock repo is structured with versioned folders,
@@ -125,8 +126,14 @@ def oci_factory_manifest(
         versions_with_tags: Dict of {version: [tags]} to add to the manifest.
 
     Returns:
-        A dictionary of the generated 'image.yaml' file
+        The generated 'image.yaml', formatted according to OCI Factory standards.
     """
+
+    class CompliantDumper(yaml.Dumper):
+        def increase_indent(self, flow=True, indentless=False):
+            """Force indent when executing dump."""
+            return super().increase_indent(flow, False)
+
     end_of_life_date = datetime.now() + timedelta(days=365 / 4)  # EOL is 3 months by default
     end_of_life = f"{end_of_life_date.strftime('%Y-%m-%d')}T00:00:00Z"
 
@@ -146,7 +153,9 @@ def oci_factory_manifest(
             }
         manifest["upload"].append(upload_item)
 
-    return manifest
+    return yaml.dump(
+        manifest, Dumper=CompliantDumper, default_flow_style=False, sort_keys=False, indent=2
+    ).strip()
 
 
 def push_to_registry(

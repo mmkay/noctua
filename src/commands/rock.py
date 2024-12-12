@@ -6,7 +6,6 @@ import re
 from typing import Annotated, List, Optional
 
 import typer
-import yaml
 from rich.console import Console
 
 import services.kubernetes as kubernetes
@@ -181,7 +180,7 @@ def manifest(
     manifest = rockcraft.oci_factory_manifest(
         repository=rock_repo, commit=commit_sha, versions_with_tags=selected_versions
     )
-    console.print(yaml.dump(manifest, sort_keys=False))
+    console.print(manifest)
 
 
 if __name__ == "__main__":
