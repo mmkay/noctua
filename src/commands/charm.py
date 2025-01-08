@@ -110,7 +110,7 @@ def release(
     dry_run: Annotated[
         bool,
         typer.Option(help="Only print the releases instead of promoting the charm."),
-    ] = True,
+    ] = False,
     format_json: Annotated[
         bool, typer.Option("--json", help="If True print the CI status as a json.")
     ] = False,
