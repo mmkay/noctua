@@ -100,7 +100,9 @@ class CharmLibrary:
                 }
             ]
         """
-        charmhub_libraries = json.loads(sh.charmcraft("list-lib", charm_name, format="json"))
+        charmhub_libraries = json.loads(
+            sh.charmcraft("list-lib", charm_name, format="json", _tty_out=False)
+        )
         libraries = {}
         for item in charmhub_libraries:
             library = CharmLibrary(
@@ -229,7 +231,7 @@ console = Console()
 
 def status(charm: str) -> Dict:
     """Return the output of `charmcraft status` as a dictionary."""
-    charmcraft_status = sh.charmcraft.status(charm, format="json")
+    charmcraft_status = sh.charmcraft.status(charm, format="json", _tty_out=False)
     return json.loads(charmcraft_status)
 
 
@@ -368,6 +370,7 @@ def upload(charm_name: str, path: str | Path, dry_run: bool = False) -> CharmUpl
                 resource_name,
                 image=f"docker://{upstream_source}",
                 format="json",
+                _tty_out=False,
             )
         )
         resource = CharmResource(
@@ -386,7 +389,7 @@ def upload(charm_name: str, path: str | Path, dry_run: bool = False) -> CharmUpl
         return fake_upload
 
     # `charmcraft upload` output: {"revision": <int>}
-    revision = json.loads(sh.charmcraft.upload(path, format="json"))["revision"]
+    revision = json.loads(sh.charmcraft.upload(path, format="json", _tty_out=False))["revision"]
     uploaded_charm = CharmUpload(name=charm_name, revision=revision, resources=uploaded_resources)
     console.print(f"[b]{charm_name}[/b]: charm uploaded {uploaded_charm}")
 
@@ -579,7 +582,9 @@ def publish_charm_libraries(dry_run: bool = False):
             )
             continue
 
-        result = json.loads(sh.charmcraft("publish-lib", library.full_name, format="json"))
+        result = json.loads(
+            sh.charmcraft("publish-lib", library.full_name, format="json", _tty_out=False)
+        )
         error_message = result["error_message"]
         if error_message:
             if "is already updated" in error_message:
