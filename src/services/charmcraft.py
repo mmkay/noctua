@@ -7,7 +7,7 @@ import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 import sh
 import yaml
@@ -144,6 +144,15 @@ class CharmResource:
     revision: Optional[int] = None
     upstream_source: Optional[str] = None  # as specified in a charm's metadata
 
+    def __str__(self):
+        """Return a JSON representation of the CharmResource object."""
+        charm_resource: Dict[str, Any] = {"name": self.name}
+        if self.revision:
+            charm_resource["revision"] = self.revision
+        if self.upstream_source:
+            charm_resource["upstream_source"] = self.upstream_source
+        return json.dumps(charm_resource)
+
 
 @dataclass
 class CharmUpload:
@@ -152,6 +161,16 @@ class CharmUpload:
     name: str
     revision: int
     resources: List[CharmResource]
+
+    def __str__(self):
+        """Return a JSON representation of the CharmUpload object."""
+        return json.dumps(
+            {
+                "name": self.name,
+                "revision": self.revision,
+                "resources": [json.loads(str(r)) for r in self.resources],
+            }
+        )
 
 
 @dataclass
@@ -321,25 +340,33 @@ def release_status(charm: str) -> Dict[str, TrackStatus]:
     return tracks_status
 
 
-def upload(charm_name: str, path: str | Path, dry_run: bool = False) -> CharmUpload:
+def upload(
+    charm_name: str, path: str | Path, quiet: bool = False, dry_run: bool = False
+) -> CharmUpload:
     """Upload a local '.charm' file to Charmhub.
 
     Args:
         charm_name: The charm name registered in Charmhub.
         path: The path to the local '.charm' file to upload.
+        quiet: Don't print anything to stdout.
         dry_run: If True, only print the uploads.
 
     Returns:
-        Revision a dict containing the uploaded charm and resources revisions.
+        CharmUpload describing the uploaded charm and resources revisions.
 
     Example:
-            {
-                "charm_revision": 16,
-                "resources": [
-                    {"name": "someimage", "revision": 2},
-                    {"name": "otherimage", "revision": 4},
-                ]
-            }
+        CharmUpload(
+            name='o11y-tester',
+            reivision=10,
+            resources=[
+                CharmResource(
+                    name='httpbin-image',
+                    revision=1,
+                    upstream_source='...'
+                ),
+                ...
+            ]
+        )
     """
     if not os.path.exists(path):
         raise InputError("The supplied '.charm' file doesn't exist.")
@@ -377,7 +404,8 @@ def upload(charm_name: str, path: str | Path, dry_run: bool = False) -> CharmUpl
             name=resource_name, revision=upload_result["revision"], upstream_source=upstream_source
         )
         uploaded_resources.append(resource)
-        console.print(f"[b]{charm_name}[/b]: resource uploaded {resource}")
+        if not quiet:
+            console.print(f"[b]{charm_name}[/b]: resource uploaded {resource}")
 
     # Upload the charm
     if dry_run:
@@ -391,7 +419,8 @@ def upload(charm_name: str, path: str | Path, dry_run: bool = False) -> CharmUpl
     # `charmcraft upload` output: {"revision": <int>}
     revision = json.loads(sh.charmcraft.upload(path, format="json", _tty_out=False))["revision"]
     uploaded_charm = CharmUpload(name=charm_name, revision=revision, resources=uploaded_resources)
-    console.print(f"[b]{charm_name}[/b]: charm uploaded {uploaded_charm}")
+    if not quiet:
+        console.print(f"[b]{charm_name}[/b]: charm uploaded {uploaded_charm}")
 
     return uploaded_charm
 
@@ -401,6 +430,7 @@ def release(
     channel: str,
     revision: int,
     resources: List[str],
+    quiet: bool = False,
     dry_run: bool = False,
 ) -> None:
     """Release a charm using `charmcraft release`.
@@ -410,6 +440,7 @@ def release(
         channel: The channel to release the charm to (e.g., 'latest/edge')
         revision: The charm revision to release
         resources: List of resources to attach in 'resource:revision' format (e.g., 'loki-image:4')
+        quiet: Don't print anything to stdout.
         dry_run: If True only print the eventual release without executing it.
     """
     resources_args = [f"--resource={r}" for r in resources]
@@ -419,12 +450,10 @@ def release(
             f"{charm} {' '.join(resources_args)} --channel={channel} "
             f"--revision={revision}"
         )
-        # console.print(
-        #     f"[yellow](dry run)[/yellow] Released [b]{charm}[/b] {revision} to {channel}"
-        # )
     else:
         sh.charmcraft.release(charm, *resources_args, channel=channel, revision=revision)
-        console.print(f"Released [b]{charm}[/b] {revision} to {channel}")
+        if not quiet:
+            console.print(f"Released [b]{charm}[/b] {revision} to {channel}")
 
 
 def promote(charm: str, source: str, target: str, dry_run: bool = False):

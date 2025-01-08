@@ -117,16 +117,19 @@ def release(
 ):
     """Upload and release a local '.charm' file to Charmhub."""
     charm_name = charm_name or charmcraft.metadata()["name"]
-    uploaded_charm = charmcraft.upload(charm_name=charm_name, path=charm_path, dry_run=dry_run)
+    uploaded_charm = charmcraft.upload(
+        charm_name=charm_name, path=charm_path, quiet=format_json, dry_run=dry_run
+    )
     charmcraft.release(
         charm=charm_name,
         channel=channel,
         revision=uploaded_charm.revision,
         resources=[f"{r.name}:{r.revision}" for r in uploaded_charm.resources],
+        quiet=format_json,
         dry_run=dry_run,
     )
     if format_json:
-        console.print({"revision": uploaded_charm.revision})
+        console.print(uploaded_charm)
 
 
 @app.command()
