@@ -129,7 +129,7 @@ def release(
         dry_run=dry_run,
     )
     if format_json:
-        console.print(uploaded_charm)
+        console.print(str(uploaded_charm))
 
 
 @app.command()
