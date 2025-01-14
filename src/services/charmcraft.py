@@ -390,12 +390,13 @@ def upload(
             # )
             continue
 
+        # `upload-resource` output: {"revision": <int>}
         upload_result = json.loads(
-            sh.charmcraft(  # `upload-resource` output: {"revision": <int>}
+            sh.charmcraft(
                 "upload-resource",
                 charm_name,
                 resource_name,
-                image=f"'docker://{upstream_source}'",
+                f'--image="docker://{upstream_source}"',
                 format="json",
                 _tty_out=False,
             )
