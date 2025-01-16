@@ -396,10 +396,9 @@ def upload(
                 "upload-resource",
                 charm_name,
                 resource_name,
-                f'--image="docker://{upstream_source}"',
+                image=f"docker://{upstream_source}",
                 format="json",
-                # _tty_out=False,
-                _fg=True,
+                _tty_out=False,
             )
         )
         resource = CharmResource(
