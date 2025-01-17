@@ -371,6 +371,17 @@ def upload(
     if not os.path.exists(path):
         raise InputError("The supplied '.charm' file doesn't exist.")
 
+    # Upload the charm
+    if dry_run:
+        fake_upload = CharmUpload(name=charm_name, revision=0, resources=[])
+        console.print(f"[yellow](dry_run)[/yellow] charmcraft upload {path} --format=json")
+        # console.print(
+        #     f"[yellow](dry_run)[/yellow] [b]{charm_name}[/b]: charm uploaded {fake_upload}"
+        # )
+        return fake_upload
+    # `charmcraft upload` output: {"revision": <int>}
+    revision = json.loads(sh.charmcraft.upload(path, format="json", _tty_out=False))["revision"]
+
     # Upload the resources
     charm_resources = metadata()["resources"]
     uploaded_resources: List[CharmResource] = []
@@ -384,12 +395,7 @@ def upload(
                 f"{charm_name} {resource_name} --image=docker://{upstream_source} "
                 "--format=json"
             )
-            # console.print(
-            #     f"[yellow](dry_run)[/yellow] [b]{charm_name}[/b]: "
-            #     f"resource uploaded {CharmResource(name=resource_name)}"
-            # )
             continue
-
         # `upload-resource` output: {"revision": <int>}
         upload_result = json.loads(
             sh.charmcraft(
@@ -408,17 +414,7 @@ def upload(
         if not quiet:
             console.print(f"[b]{charm_name}[/b]: resource uploaded {resource}")
 
-    # Upload the charm
-    if dry_run:
-        fake_upload = CharmUpload(name=charm_name, revision=0, resources=[])
-        console.print(f"[yellow](dry_run)[/yellow] charmcraft upload {path} --format=json")
-        # console.print(
-        #     f"[yellow](dry_run)[/yellow] [b]{charm_name}[/b]: charm uploaded {fake_upload}"
-        # )
-        return fake_upload
-
-    # `charmcraft upload` output: {"revision": <int>}
-    revision = json.loads(sh.charmcraft.upload(path, format="json", _tty_out=False))["revision"]
+    # Build the CharmUpload object and return it
     uploaded_charm = CharmUpload(name=charm_name, revision=revision, resources=uploaded_resources)
     if not quiet:
         console.print(f"[b]{charm_name}[/b]: charm uploaded {uploaded_charm}")
