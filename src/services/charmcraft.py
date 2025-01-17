@@ -452,7 +452,9 @@ def release(
             f"--revision={revision}"
         )
     else:
-        sh.charmcraft.release(charm, *resources_args, channel=channel, revision=revision)
+        sh.charmcraft.release(
+            charm, *resources_args, channel=channel, revision=revision, _tty_out=False
+        )
         if not quiet:
             console.print(f"Released [b]{charm}[/b] {revision} to {channel}")
 
