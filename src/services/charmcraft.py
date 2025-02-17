@@ -383,7 +383,7 @@ def upload(
     revision = json.loads(sh.charmcraft.upload(path, format="json", _tty_out=False))["revision"]
 
     # Upload the resources
-    charm_resources = metadata()["resources"]
+    charm_resources = metadata().get("resources", {})  # machine charms have no resources
     uploaded_resources: List[CharmResource] = []
     for resource_name in charm_resources.keys():
         upstream_source = charm_resources[resource_name][
