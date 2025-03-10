@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-python@v4
       - name: Install dependencies
         run: |
-          sudo snap install charmcraft --channel=3.x/candidate
+          sudo snap install charmcraft --channel=3.x/candidate --classic
           python -m pip install tox
       - name: Run Linter
         run: tox -e lint
