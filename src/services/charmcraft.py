@@ -315,6 +315,8 @@ def release_status(charm: str) -> Dict[str, TrackStatus]:
         track = track_mappings["track"]
         for mapping in track_mappings["mappings"]:  # for each base
             channels: Dict[str, ChannelStatus] = {}
+            if not mapping["base"]:
+                continue
             base_version = mapping["base"]["channel"]
             base_arch = mapping["base"]["architecture"]
             for release in mapping["releases"]:  # for each channel
