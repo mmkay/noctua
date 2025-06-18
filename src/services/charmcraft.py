@@ -653,7 +653,7 @@ def publish_charm_libraries(dry_run: bool = False):
         if error_message:
             if "is already updated" in error_message:
                 console.print(f"Library {library.full_name} is already updated in Charmhub.")
-                return
+                continue
             if "is the same than in Charmhub but content is different" in error_message:
                 raise CharmhubError(error_message)
             if "LIBPATCH number was incorrectly incremented" in error_message:
