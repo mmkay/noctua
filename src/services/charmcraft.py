@@ -644,6 +644,11 @@ def publish_charm_libraries(dry_run: bool = False):
         result = json.loads(
             sh.charmcraft("publish-lib", library.full_name, format="json", _tty_out=False)
         )
+        # Some versions of Charmcraft return a list, some return a dict
+        # Take the first item of the list, because publish-lib supports one library at a time anyway
+        if isinstance(result, list):
+            result = result[0]
+
         error_message = result["error_message"]
         if error_message:
             if "is already updated" in error_message:
