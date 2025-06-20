@@ -649,7 +649,7 @@ def publish_charm_libraries(dry_run: bool = False):
         if isinstance(result, list):
             result = result[0]
 
-        error_message = result["error_message"]
+        error_message = result.get("error_message")
         if error_message:
             if "is already updated" in error_message:
                 console.print(f"Library {library.full_name} is already updated in Charmhub.")
